@@ -25,7 +25,7 @@ jobs:
           docker-compose run --service-ports web coverage run manage.py test
           docker-compose run --service-ports web coverage json -i
           docker-compose run --service-ports web coverage report
-          docker-compose run --service-ports web bash <(curl -s https://codecov.io/bash)
+          docker-compose run --service-ports web curl -s https://codecov.io/bash | bash
       - name: Archive production artifacts
         uses: actions/upload-artifact@v2
         with:
