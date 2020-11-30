@@ -1,0 +1,17 @@
+[run]
+omit =
+    */asgi.py
+    */wsgi.py
+    manage.py
+    masifapp/*
+    */__init__.py
+    */apps.py
+
+[report]
+omit =
+    */asgi.py
+    */wsgi.py
+    manage.py
+    masifapp/*
+    */__init__.py
+    */apps.py
