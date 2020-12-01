@@ -22,11 +22,13 @@ jobs:
           python-version: 3.7
       - name: Docker init
         run: |
+          docker-compose run --service-ports web python manage.py makemigrations
+          docker-compose run --service-ports web python manage.py migrate
           docker-compose run --service-ports web coverage run manage.py test
           docker-compose run --service-ports web coverage xml -i
           docker-compose run --service-ports web coverage report
           docker-compose run --service-ports web curl -s https://codecov.io/bash | bash
-      - name: Archive production artifacts
+      - name: Coverage Artifact
         uses: actions/upload-artifact@v2
         with:
           name: coverage-file
