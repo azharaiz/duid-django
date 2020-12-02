@@ -14,10 +14,16 @@ class UserManagerTest(TestCase):
     def test_user_create_success(self):
         user = User.objects.create_user(email=EMAIL_TEST)
         self.assertEqual(user.email, EMAIL_TEST)
+        self.assertEqual(user.__str__(), user.email)
 
     def test_user_create_fail(self):
         with self.assertRaises(TypeError):
             user = User.objects.create_user()
+            self.assertEqual(user.email, None)
+
+    def test_user_create_fail_null_email(self):
+        with self.assertRaises(ValueError):
+            user = User.objects.create_user(email=None)
             self.assertEqual(user.email, None)
 
 
