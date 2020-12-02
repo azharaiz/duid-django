@@ -22,6 +22,8 @@ jobs:
           python-version: 3.7
       - name: Docker init
         run: |
+          docker-compose run --service-ports web python manage.py makemigrations
+          docker-compose run --service-ports web python manage.py migrate
           docker-compose run --service-ports web coverage run manage.py test
           docker-compose run --service-ports web coverage xml -i
           docker-compose run --service-ports web coverage report
