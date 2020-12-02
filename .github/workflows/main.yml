@@ -28,7 +28,7 @@ jobs:
           docker-compose run --service-ports web coverage xml -i
           docker-compose run --service-ports web coverage report
           docker-compose run --service-ports web curl -s https://codecov.io/bash | bash
-      - name: Archive production artifacts
+      - name: Coverage Artifact
         uses: actions/upload-artifact@v2
         with:
           name: coverage-file
