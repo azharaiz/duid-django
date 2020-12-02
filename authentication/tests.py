@@ -1,8 +1,13 @@
+import json
+
 from django.test import TestCase
+from rest_framework.test import APIClient
 
 from authentication.models import User
 
 EMAIL_TEST = "test@email.com"
+PASSWORD_TEST = "test12345"
+TOKEN_URL = '/api/auth/token/'
 
 
 class UserManagerTest(TestCase):
@@ -30,3 +35,25 @@ class UserModelTest(TestCase):
             user.save()
 
             self.assertEqual(user.email, None)
+
+
+class UserAuthenticationTokenTest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        User.objects.create_superuser(email=EMAIL_TEST, password=PASSWORD_TEST)
+
+    def test_user_exist_can_obtain_token(self):
+        response = self.client.post(TOKEN_URL,
+                                    {'email': EMAIL_TEST, 'password': PASSWORD_TEST},
+                                    format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(json.loads(response.content).get('refresh'))
+        self.assertTrue(json.loads(response.content).get('access'))
+
+    def test_user_not_exist_can_not_obtain_token(self):
+        response = self.client.post(TOKEN_URL,
+                                    {'email': 'different@email.com', 'password': PASSWORD_TEST},
+                                    format='json')
+        self.assertEqual(response.status_code, 401)
+        self.assertFalse(json.loads(response.content).get('refresh'))
+        self.assertFalse(json.loads(response.content).get('access'))
