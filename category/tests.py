@@ -1,29 +1,47 @@
 import pytz
+import json
 from datetime import datetime
-
+from collections import OrderedDict
 from unittest import mock
 from django.test import TestCase
 from .models import Category
+from .CategorySerializers import CategorySerializer
 
+from rest_framework.test import APIClient
+from authentication.models import User
+
+EMAIL_TEST = "test@email.com"
+OTHER_EMAIL_TEST = "othertest@email.com"
+PASSWORD_TEST = "test12345"
+TOKEN_URL = '/api/auth/token/'
 class CategoryModelTest(TestCase):
     def setUp(self):
         self.mocked_date = datetime(2020, 11, 20, 20, 8, 7, 127325, tzinfo=pytz.timezone("Asia/Jakarta"))
+        self.user = User.objects.create_superuser(email=EMAIL_TEST, password=PASSWORD_TEST)
+        self.other_user = User.objects.create_superuser(email=OTHER_EMAIL_TEST, password=PASSWORD_TEST)
         category1 = ""
         category2 = ""
+        category3 = ""
         with mock.patch('django.utils.timezone.now', mock.Mock(return_value=self.mocked_date)):
             category1 = Category.objects.create(
                 category_title = 'title1',
+                user = self.user,
                 category_type = 'INCOME'
             )
             category2 = Category.objects.create(
                 category_title = 'title2',
+                user = self.user,
                 category_type = 'EXPENSE'
             )
-            category1.save()
-            category2.save()
+            category3 = Category.objects.create(
+                category_title = 'title3',
+                user = self.other_user,
+                category_type = 'EXPENSE'
+            )
             
         self.category1_object = Category.objects.get(category_title='title1')
         self.category2_object = Category.objects.get(category_title='title2')
+        self.category3_object = Category.objects.get(category_title='title3')
 
     def test_object_category_is_created(self):
         self.assertTrue(type(self.category1_object), Category)
@@ -62,4 +80,16 @@ class CategoryModelTest(TestCase):
     def test_updated_at_is_generated(self):
         self.assertEqual(
             self.category1_object.updated_at, self.mocked_date
+        )
+    
+    def test_category1_category3_has_different_user(self):
+        self.assertNotEqual(
+            self.category1_object.user,
+            self.category3_object.user
+        )
+    
+    def test_category1_category2_has_same_user(self):
+        self.assertEqual(
+            self.category1_object.user,
+            self.category2_object.user
         )
