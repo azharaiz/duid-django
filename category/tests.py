@@ -1,9 +1,11 @@
 import pytz
 import json
 from datetime import datetime
+from collections import OrderedDict
 from unittest import mock
 from django.test import TestCase
 from .models import Category
+from .CategorySerializers import CategorySerializer
 
 from rest_framework.test import APIClient
 from authentication.models import User
@@ -91,3 +93,89 @@ class CategoryModelTest(TestCase):
             self.category1_object.user,
             self.category2_object.user
         )
+
+class CategoryListViewTest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_superuser(email=EMAIL_TEST, password=PASSWORD_TEST)
+        self.other_user = User.objects.create_superuser(email=OTHER_EMAIL_TEST, password=PASSWORD_TEST)
+        self.category3 = Category.objects.create(
+                category_title = 'title3',
+                user = self.user,
+                category_type = 'INCOME'
+        )
+        self.category4 = Category.objects.create(
+            category_title = 'title4',
+            user = self.user,
+            category_type = 'EXPENSE'
+        )
+        self.category5 = Category.objects.create(
+            category_title = 'title5',
+            user = self.other_user,
+            category_type = 'EXPENSE'
+        )
+        self.not_saved_category = Category(
+            category_title = 'not_saved',
+            user = self.user,
+            category_type = 'EXPENSE'
+        )
+
+    @staticmethod
+    def get_jwt_token(client, email, password):
+        response_token = client.post(
+            TOKEN_URL,
+            {
+                'email': email,
+                'password': password
+            },
+            format='json'
+        )
+        
+        jwt_token = json.loads(response_token.content).get('access')
+        return jwt_token
+    
+    @staticmethod
+    def get_list_category_title(list_category):
+        json_category_title_list = []
+        for category_item in list_category:
+            json_category_title_list.append(category_item.get("category_title"))
+        return json_category_title_list
+    
+    def test_user_auth_can_get_list_of_category(self):
+        token = self.get_jwt_token(self.client, EMAIL_TEST, PASSWORD_TEST)
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
+        response = self.client.get(
+            '/api/category/all/', {}, format='json'
+        )
+        json_category_list = json.loads(response.content).get('category_list')
+        self.assertEqual(200, response.status_code)
+
+        json_category_title_list = self.get_list_category_title(json_category_list)
+        self.assertIn(self.category3.category_title, json_category_title_list)
+        self.assertIn(self.category4.category_title, json_category_title_list)
+        self.assertNotIn(self.not_saved_category.category_title, json_category_title_list)
+
+    def test_user_and_other_user_has_different_data(self):
+        token = self.get_jwt_token(self.client, EMAIL_TEST, PASSWORD_TEST)
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
+        response_user = self.client.get(
+            '/api/category/all/', {}, format='json'
+        )
+        self.assertEqual(200, response_user.status_code)
+
+        token = self.get_jwt_token(self.client, OTHER_EMAIL_TEST, PASSWORD_TEST)
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
+        response_other_user = self.client.get(
+            '/api/category/all/', {}, format='json'
+        )
+        self.assertEqual(200, response_other_user.status_code)
+
+        self.assertNotEqual(response_user.data, response_other_user.data)
+    
+    def test_user_is_not_authenticate_get_list_of_category(self):
+        response = self.client.get(
+            '/api/category/all/', {}, format='json'
+        )
+        self.assertEqual(401, response.status_code)
+
+
