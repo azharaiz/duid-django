@@ -3,7 +3,7 @@ omit =
     */asgi.py
     */wsgi.py
     manage.py
-    masifapp/*
+    */tests.py
     */__init__.py
     */apps.py
 
@@ -12,6 +12,6 @@ omit =
     */asgi.py
     */wsgi.py
     manage.py
-    masifapp/*
+    */tests.py
     */__init__.py
     */apps.py
