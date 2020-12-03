@@ -5,21 +5,28 @@ from unittest import mock
 import pytz
 from django.test import TestCase, Client
 
+from authentication.models import User
 from dompet.models import Dompet
 
 ALL_DOMPET = '/api/dompet/'
 
+EMAIL_TEST_1 = "test1@email.com"
+EMAIL_TEST_2 = "test2@email.com"
+PASSWORD_TEST = "test12345"
+
 
 class DompetModelTest(TestCase):
     def setUp(self):
+        self.user1 = User.objects.create_superuser(email=EMAIL_TEST_1, password=PASSWORD_TEST)
+        self.user2 = User.objects.create_superuser(email=EMAIL_TEST_2, password=PASSWORD_TEST)
         self.mocked_date_1 = datetime(2020, 11, 20, 20, 8, 7, 127325, tzinfo=pytz.timezone("Asia/Jakarta"))
         self.mocked_date_2 = datetime(2020, 11, 21, 20, 8, 7, 127325, tzinfo=pytz.timezone("Asia/Jakarta"))
         self.mock_account_title_1 = "New Dompet Test 1"
         self.mock_account_title_2 = "New Dompet Test 2"
 
         with mock.patch('django.utils.timezone.now', mock.Mock(return_value=self.mocked_date_1)):
-            test_dompet_1 = Dompet(account_title=self.mock_account_title_1)
-            test_dompet_2 = Dompet(account_title=self.mock_account_title_2)
+            test_dompet_1 = Dompet(account_title=self.mock_account_title_1, user=self.user1)
+            test_dompet_2 = Dompet(account_title=self.mock_account_title_2, user=self.user2)
             test_dompet_1.save()
             test_dompet_2.save()
 
@@ -58,7 +65,9 @@ class DompetModelTest(TestCase):
 
 class DompetAPITest(TestCase):
     def setUp(self):
-        self.new_dompet_post = Client().post(ALL_DOMPET, {"account_title": "test 0"})
+        self.user1 = User.objects.create_superuser(email=EMAIL_TEST_1, password=PASSWORD_TEST)
+        self.user2 = User.objects.create_superuser(email=EMAIL_TEST_2, password=PASSWORD_TEST)
+        self.new_dompet_post = Client().post(ALL_DOMPET, {"account_title": "test 0", "user":self.user1.id})
         self.newly_created_dompet = json.loads(self.new_dompet_post.content.decode('utf-8'))
 
     # Test endpoint
@@ -73,7 +82,7 @@ class DompetAPITest(TestCase):
             self.assertEqual(i, json_response['count'])
             if i <= 10:
                 self.assertEqual(i, len(json_response['results']))
-            Dompet(account_title=f'testing {i}').save()
+            Client().post(ALL_DOMPET, {"account_title": f'testing {i}', "user": self.user1.id})
 
     def test_pagination_should_be_correct(self):
         response = Client().get(ALL_DOMPET + '?page=2')
@@ -84,7 +93,7 @@ class DompetAPITest(TestCase):
         self.assertIsNone(json_response['next'])
         self.assertIsNone(json_response['previous'])
         for i in range(25):
-            Dompet(account_title=f'test {i}').save()
+            Client().post(ALL_DOMPET, {"account_title": f'testing {i}', "user": self.user1.id})
 
         response = Client().get(ALL_DOMPET)
         json_response = json.loads(response.content.decode('utf-8'))
@@ -103,7 +112,7 @@ class DompetAPITest(TestCase):
 
     def test_get_all_dompet_item_name_correct(self):
         for i in range(1, 10):
-            Dompet(account_title=f'test {i}').save()
+            Client().post(ALL_DOMPET, {"account_title": f'test {i}', "user": self.user1.id})
         response = Client().get(ALL_DOMPET)
         json_response = json.loads(response.content.decode('utf-8'))
         for i in range(len(json_response['results'])):
@@ -151,7 +160,8 @@ class DompetAPITest(TestCase):
             "account_id": "c6a1af05-ef26-416b-a4b1-e23b4942f50b",
             "account_title": change_title,
             "created_at": "2020-12-01T14:00:52.294269Z",
-            "updated_at": "2020-12-01T17:31:04.167919Z"
+            "updated_at": "2020-12-01T17:31:04.167919Z",
+            "user": self.user1.id
         }, content_type='application/json')
 
         json_response = json.loads(response.content.decode('utf-8'))
