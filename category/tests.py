@@ -1,11 +1,9 @@
 import pytz
 import json
 from datetime import datetime
-from collections import OrderedDict
 from unittest import mock
 from django.test import TestCase
 from .models import Category
-from .CategorySerializers import CategorySerializer
 
 from rest_framework.test import APIClient
 from authentication.models import User
