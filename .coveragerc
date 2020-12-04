@@ -3,15 +3,17 @@ omit =
     */asgi.py
     */wsgi.py
     manage.py
-    */tests.py
+    duid/*
     */__init__.py
     */apps.py
+    *tests.py
 
 [report]
 omit =
     */asgi.py
     */wsgi.py
     manage.py
-    */tests.py
+    duid/*
     */__init__.py
     */apps.py
+    *tests.py
