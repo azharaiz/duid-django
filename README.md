@@ -1,18 +1,22 @@
 # DUID
 [![codecov](https://codecov.io/gh/azharaiz/duid/branch/master/graph/badge.svg)](https://codecov.io/gh/azharaiz/duid)
+
 Expense Tracker
 
 # Account(Dompet) API Documentation
-Header for all request: 
+
+#### Header for all request: 
+
 ```json
 {"Authorization" : BearerToken}
 ```
 
 ## Get all dompet
-URL : `/api/dompet/`
-Method : `GET`
+#### URL : `/api/dompet/`
 
-Response :
+#### Method : `GET`
+
+#### Response :
 ```json
 {
     "count": 5,
@@ -59,10 +63,11 @@ Response :
 ```
 
 ## Get one dompet
-URL : `/api/dompet/<DompetUUID>/`
-Method : `GET`
+#### URL : `/api/dompet/<DompetUUID>/`
 
-Response :
+#### Method : `GET`
+
+#### Response :
 ```json
 {
     "account_id": "00eec4dc-45d9-43ab-bee7-5f69dd1aba8b",
@@ -74,9 +79,12 @@ Response :
 ```
 
 ## Create one dompet
-URL : `/api/dompet/`
-Method : `POST`
-Data :
+#### URL : `/api/dompet/`
+
+#### Method : `POST`
+
+#### Data :
+
 ```json
 {
     "account_title": String,
@@ -86,7 +94,8 @@ Data :
 
 ```
 
-Response :
+#### Response :
+
 ```json
 {
     "account_id": "00eec4dc-45d9-43ab-bee7-5f69dd1aba8b",
@@ -98,21 +107,23 @@ Response :
 ```
 
 ## Delete one dompet
-URL : `/api/dompet/<DompetUUID>`
-Method : `DELETE`
+#### URL : `/api/dompet/<DompetUUID>`
 
+#### Method : `DELETE`
 
-
-Response :
+#### Response :
 
 ```json
 No response
 ```
 
 ## Update one dompet
-URL : `/api/dompet/<DompetUUID>`
-Method : `PUT`
-Data :
+#### URL : `/api/dompet/<DompetUUID>`
+
+#### Method : `PUT`
+
+#### Data :
+
 ```json
 {
     "account_id": "00eec4dc-45d9-43ab-bee7-5f69dd1aba8b",
@@ -123,7 +134,7 @@ Data :
 }
 ```
 
-Response :
+#### Response :
 
 ```json
 {
