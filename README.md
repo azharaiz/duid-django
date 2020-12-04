@@ -80,7 +80,7 @@ Data :
 ```json
 {
     "account_title": String,
-    "user": String(UsedUUID)
+    "user": String(UserUUID)
 }
 
 
