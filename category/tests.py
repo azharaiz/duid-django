@@ -5,7 +5,7 @@ from .util import UtilCategory
 from datetime import datetime
 from collections import OrderedDict
 from unittest import mock
-from django.test import TestCase
+from django.test import TestCase, Client
 from .models import Category
 from .CategorySerializers import CategorySerializer
 
@@ -16,6 +16,7 @@ EMAIL_TEST = "test@email.com"
 OTHER_EMAIL_TEST = "othertest@email.com"
 PASSWORD_TEST = "test12345"
 TOKEN_URL = '/api/auth/token/'
+API_CATEGORY_ITEM = "/api/category/item/"
 class CategoryModelTest(TestCase):
     def setUp(self):
         self.mocked_date = datetime(2020, 11, 20, 20, 8, 7, 127325, tzinfo=pytz.timezone("Asia/Jakarta"))
@@ -162,6 +163,7 @@ class CategoryListViewTest(TestCase):
 class CategoryItemViewTest(TestCase):
     def setUp(self):
         self.client = APIClient()
+        self.basic_client = Client()
         self.user = User.objects.create_superuser(email=EMAIL_TEST, password=PASSWORD_TEST)
         self.other_user = User.objects.create_superuser(email=OTHER_EMAIL_TEST, password=PASSWORD_TEST)
         self.category6 = Category.objects.create(
@@ -192,7 +194,7 @@ class CategoryItemViewTest(TestCase):
         data = {
             "category_id" : str(self.category6.category_id)
         }
-        response_category6 = self.client.generic(method="GET", path="/api/category/item/", data=json.dumps(data), content_type='application/json')
+        response_category6 = self.client.generic(method="GET", path=API_CATEGORY_ITEM, data=json.dumps(data), content_type='application/json')
         self.assertEqual(200, response_category6.status_code)
         json_category_item = json.loads(response_category6.content).get("category_title")
         self.assertEqual(json_category_item, self.category6.category_title)
@@ -201,7 +203,7 @@ class CategoryItemViewTest(TestCase):
         data = {
             "category_id" : str(self.category6.category_id)
         }
-        response_category6 = self.client.generic(method="GET", path="/api/category/item/", data=json.dumps(data), content_type='application/json')
+        response_category6 = self.client.generic(method="GET", path=API_CATEGORY_ITEM, data=json.dumps(data), content_type='application/json')
         self.assertEqual(401, response_category6.status_code)
     
     def test_user_auth_cannot_get_other_user_category(self):
@@ -210,7 +212,7 @@ class CategoryItemViewTest(TestCase):
         data = {
             "category_id" : str(self.category8.category_id)
         }
-        response_category8 = self.client.generic(method="GET", path="/api/category/item/", data=json.dumps(data), content_type='application/json')
+        response_category8 = self.client.generic(method="GET", path=API_CATEGORY_ITEM, data=json.dumps(data), content_type='application/json')
         self.assertEqual(404, response_category8.status_code)
     
     def test_user_auth_can_delete_one_item_of_category(self):
@@ -219,14 +221,14 @@ class CategoryItemViewTest(TestCase):
         data = {
             "category_id" : str(self.category6.category_id)
         }
-        response_category6 = self.client.generic(method="DELETE", path="/api/category/item/", data=json.dumps(data), content_type='application/json')
+        response_category6 = self.client.generic(method="DELETE", path=API_CATEGORY_ITEM, data=json.dumps(data), content_type='application/json')
         self.assertEqual(200, response_category6.status_code)
     
     def test_user_not_auth_cannot_delete_one_item_of_category(self):
         data = {
             "category_id" : str(self.category6.category_id)
         }
-        response_category6 = self.client.generic(method="DELETE", path="/api/category/item/", data=json.dumps(data), content_type='application/json')
+        response_category6 = self.client.generic(method="DELETE", path=API_CATEGORY_ITEM, data=json.dumps(data), content_type='application/json')
         self.assertEqual(401, response_category6.status_code)
 
     def test_user_auth_cannot_delete_other_user_category(self):
@@ -235,5 +237,70 @@ class CategoryItemViewTest(TestCase):
         data = {
             "category_id" : str(self.category8.category_id)
         }
-        response_category8 = self.client.generic(method="DELETE", path="/api/category/item/", data=json.dumps(data), content_type='application/json')
+        response_category8 = self.client.generic(method="DELETE", path=API_CATEGORY_ITEM, data=json.dumps(data), content_type='application/json')
         self.assertEqual(404, response_category8.status_code)
+    
+    def test_user_auth_can_post_one_item_of_category(self):
+        token = UtilCategory.get_jwt_token(self.client, EMAIL_TEST, PASSWORD_TEST)
+        self.basic_client.defaults["HTTP_AUTHORIZATION"] = 'Bearer ' + token
+        data = {
+            "category_title" : "tester",
+            "category_type" : "INCOME"
+        }
+        response_category = self.basic_client.post(API_CATEGORY_ITEM, data)
+        self.assertEqual(200, response_category.status_code)
+        json_category_item = json.loads(response_category.content).get("message")
+        self.assertEqual(json_category_item, "success add category")
+    
+    def test_user_not_auth_cannot_post_one_item_of_category(self):
+        data = {
+            "category_title" : "tester",
+            "category_type" : "INCOME"
+        }
+        response_category = self.basic_client.post(API_CATEGORY_ITEM, data)
+        self.assertEqual(401, response_category.status_code)
+    
+    def test_user_auth_cannot_post_one_item_of_category_when_title_exist_for_that_user(self):
+        token = UtilCategory.get_jwt_token(self.client, EMAIL_TEST, PASSWORD_TEST)
+        self.basic_client.defaults["HTTP_AUTHORIZATION"] = 'Bearer ' + token
+        data = {
+            "category_title" : self.category6.category_title,
+            "category_type" : "INCOME"
+        }
+        response_category = self.basic_client.post(API_CATEGORY_ITEM, data)
+        self.assertEqual(400, response_category.status_code)
+        json_category_item = json.loads(response_category.content).get("detail")
+        self.assertIn("UNIQUE constraint", json_category_item)
+
+    def test_user_auth_cannot_post_one_item_of_category_when_type_not_INCOME_or_EXPENSE(self):
+        token = UtilCategory.get_jwt_token(self.client, EMAIL_TEST, PASSWORD_TEST)
+        self.basic_client.defaults["HTTP_AUTHORIZATION"] = 'Bearer ' + token
+        data = {
+            "category_title" : "error type",
+            "category_type" : "ADD"
+        }
+        response_category = self.basic_client.post(API_CATEGORY_ITEM, data)
+        self.assertEqual(400, response_category.status_code)
+        json_category_item = json.loads(response_category.content).get("category_type")
+        self.assertIn("not a valid choice", json_category_item[0])
+
+    def test_user_auth_can_post_one_item_of_category_when_title_exist_for_other_user(self):
+        token = UtilCategory.get_jwt_token(self.client, EMAIL_TEST, PASSWORD_TEST)
+        self.basic_client.defaults["HTTP_AUTHORIZATION"] = 'Bearer ' + token
+        data = {
+            "category_title" : self.category8.category_title,
+            "category_type" : self.category8.category_type
+        }
+        response_category = self.basic_client.post(API_CATEGORY_ITEM, data)
+        self.assertEqual(200, response_category.status_code)
+        json_category_item = json.loads(response_category.content).get("message")
+        self.assertEqual(json_category_item, "success add category")
+
+    def test_user_auth_cannot_post_one_item_of_category_with__null_data(self):
+        token = UtilCategory.get_jwt_token(self.client, EMAIL_TEST, PASSWORD_TEST)
+        self.basic_client.defaults["HTTP_AUTHORIZATION"] = 'Bearer ' + token
+        data = {
+            "category_type" : "INCOME"
+        }
+        response_category = self.basic_client.post(API_CATEGORY_ITEM, data)
+        self.assertEqual(400, response_category.status_code)
