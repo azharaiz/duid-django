@@ -1,8 +1,8 @@
 from django.urls import path
-from .views import CategoryListView, CategoryItemView
+from .views import CategoryView, CategoryItemView
 
 app_name = 'category'
 urlpatterns = [
-    path('all/', CategoryListView.as_view()),
-    path('item/', CategoryItemView.as_view())
+    path('', CategoryView.as_view()),
+    path('<str:category_id>/', CategoryItemView.as_view())
 ]
