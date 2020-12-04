@@ -64,4 +64,21 @@ class CategoryItemView(APIView):
             'message' : "success add category"
         }
         return(Response(content))
+
+    def put(self, request):
+        category_id = request.data.get('category_id')
+        category_item = Category.objects.get(category_id=category_id)
+        category_data = CategorySerializer(instance=category_item ,data=request.data)
+        category_data.is_valid(raise_exception=True)
+        try:
+            category_data.save()
+        except IntegrityError as integrity_error:
+            data = {
+                "detail" : str(integrity_error)
+            }
+            return(Response(data, status=400))
+        content = {
+            'message' : "success add category"
+        }
+        return(Response(content))
         
