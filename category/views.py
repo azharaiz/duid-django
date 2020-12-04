@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Category
-from .serializer import CategorySerializer
+from .serializers import CategorySerializer
 from authentication.models import User
 import uuid
 

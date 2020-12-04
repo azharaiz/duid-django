@@ -7,7 +7,7 @@ from collections import OrderedDict
 from unittest import mock
 from django.test import TestCase, Client
 from .models import Category
-from .serializer import CategorySerializer
+from .serializers import CategorySerializer
 
 from rest_framework.test import APIClient
 from authentication.models import User
