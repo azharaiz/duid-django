@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
@@ -44,3 +45,23 @@ class CategoryItemView(APIView):
                 'message' : "success delete category"
         }
         return(Response(content))
+
+    def post(self, request):
+        category_data = CategorySerializer(data=request.data)
+        category_data.is_valid(raise_exception=True)
+        try:
+            category_item = Category.objects.create(
+                user=request.user,
+                category_title = request.POST.get("category_title"),
+                category_type = request.POST.get("category_type")
+            )
+        except IntegrityError as integrity_error:
+            data = {
+                "detail" : str(integrity_error)
+            }
+            return(Response(data, status=400))
+        content = {
+            'message' : "success add category"
+        }
+        return(Response(content))
+        
