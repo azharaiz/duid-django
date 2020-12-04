@@ -304,3 +304,83 @@ class CategoryItemViewTest(TestCase):
         }
         response_category = self.basic_client.post(API_CATEGORY_ITEM, data)
         self.assertEqual(400, response_category.status_code)
+
+    def test_user_auth_can_put_one_item_of_category(self):
+        category6_id = str(self.category6.category_id)
+        token = UtilCategory.get_jwt_token(self.client, EMAIL_TEST, PASSWORD_TEST)
+        self.basic_client.defaults["HTTP_AUTHORIZATION"] = 'Bearer ' + token
+        data = {
+            "category_id" : category6_id,
+            "category_title" : "test_put",
+            "category_type" : "INCOME"
+        }
+        response_category = self.basic_client.put(API_CATEGORY_ITEM, data, content_type="application/json")
+        self.assertEqual(200, response_category.status_code)
+        
+        json_category_item = json.loads(response_category.content).get("message")
+        self.assertEqual(json_category_item, "success add category")
+
+        get_latest_category6 = Category.objects.get(category_id = category6_id)
+        self.assertEqual(get_latest_category6.category_title, "test_put")
+    
+    def test_user_not_auth_cannot_put_one_item_of_category(self):
+        category6_id = str(self.category6.category_id)
+        data = {
+            "category_id" : category6_id,
+            "category_title" : "tester",
+            "category_type" : "INCOME"
+        }
+        response_category = self.basic_client.put(API_CATEGORY_ITEM, data, content_type="application/json")
+        self.assertEqual(401, response_category.status_code)
+
+        get_latest_category6 = Category.objects.get(category_id=category6_id)
+        self.assertNotEqual(get_latest_category6.category_title, "tester")
+    
+    def test_user_auth_cannot_put_one_item_of_category_when_title_exist_for_that_user(self):
+        category6_id = str(self.category6.category_id)
+        category7_title = self.category7.category_title
+        token = UtilCategory.get_jwt_token(self.client, EMAIL_TEST, PASSWORD_TEST)
+        self.basic_client.defaults["HTTP_AUTHORIZATION"] = 'Bearer ' + token
+        data = {
+            "category_id" : category6_id,
+            "category_title" : category7_title,
+            "category_type" : "INCOME"
+        }
+        response_category = self.basic_client.put(API_CATEGORY_ITEM, data, content_type="application/json")
+        self.assertEqual(400, response_category.status_code)
+        json_category_item = json.loads(response_category.content).get("detail")
+        self.assertIn("UNIQUE constraint", json_category_item)
+
+    def test_user_auth_cannot_put_one_item_of_category_when_type_not_INCOME_or_EXPENSE(self):
+        category6_id = str(self.category6.category_id)
+        token = UtilCategory.get_jwt_token(self.client, EMAIL_TEST, PASSWORD_TEST)
+        self.basic_client.defaults["HTTP_AUTHORIZATION"] = 'Bearer ' + token
+        data = {
+            "category_id" : category6_id,
+            "category_title" : "error type",
+            "category_type" : "ADD"
+        }
+        response_category = self.basic_client.put(API_CATEGORY_ITEM, data, content_type="application/json")
+        self.assertEqual(400, response_category.status_code)
+        json_category_item = json.loads(response_category.content).get("category_type")
+        self.assertIn("not a valid choice", json_category_item[0])
+
+        get_latest_category6 = Category.objects.get(category_id=category6_id)
+        self.assertNotEqual(get_latest_category6.category_title, "error type")
+
+    def test_user_auth_can_put_one_item_of_category_when_title_exist_for_other_user(self):
+        category6_id = str(self.category6.category_id)
+        token = UtilCategory.get_jwt_token(self.client, EMAIL_TEST, PASSWORD_TEST)
+        self.basic_client.defaults["HTTP_AUTHORIZATION"] = 'Bearer ' + token
+        data = {
+            "category_id" : category6_id,
+            "category_title" : self.category8.category_title,
+            "category_type" : self.category8.category_type
+        }
+        response_category = self.basic_client.put(API_CATEGORY_ITEM, data, content_type="application/json")
+        self.assertEqual(200, response_category.status_code)
+        json_category_item = json.loads(response_category.content).get("message")
+        self.assertEqual(json_category_item, "success add category")
+
+        get_latest_category6 = Category.objects.get(category_id=category6_id)
+        self.assertEqual(get_latest_category6.category_title, self.category8.category_title)
