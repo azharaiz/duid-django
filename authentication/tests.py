@@ -10,6 +10,9 @@ EMAIL_TEST = "test@email.com"
 PASSWORD_TEST = "test12345"
 TOKEN_URL = '/api/auth/token/'
 PROFILE_URL = '/api/auth/profile/'
+RANDOM_JWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" \
+             ".eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ" \
+             ".SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 
 
 class UserManagerTest(TestCase):
@@ -86,10 +89,7 @@ class UserProfileViewTest(TestCase):
         self.assertEqual(401, response.status_code)
 
     def test_get_user_profile_with_invalid_token_fail(self):
-        random_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" \
-                       ".eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ" \
-                       ".SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
-        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + random_token)
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + RANDOM_JWT)
 
         response = self.client.get(PROFILE_URL, format='json')
         content = json.loads(response.content)
