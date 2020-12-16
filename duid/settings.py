@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'dompet',
     'category',
-    'authentication'
+    'authentication',
+    'target'
 ]
 
 MIDDLEWARE = [
