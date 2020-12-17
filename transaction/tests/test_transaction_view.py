@@ -194,3 +194,45 @@ class TransactionViewTest(TestCase):
         self.assertIn(
             id_dompet2,
             json_transaction_list[2].get("dompet"))
+
+    def test_user_auth_can_post_one_item_of_transaction(self):
+        token = UtilCategory.get_jwt_token(self.client, EMAIL_TEST, PASSWORD_TEST)
+        self.basic_client.defaults["HTTP_AUTHORIZATION"] = 'Bearer ' + token
+        data = {
+            "dompet":self.dompet1_object.account_id,
+            "category":self.category1_object.category_id,
+            "amount":123.321
+        }
+        response_transaction = self.basic_client.post(API_TRANSACTION_ITEM, data)
+        self.assertEqual(200, response_transaction.status_code)
+        json_transacrion_item = json.loads(response_transaction.content).get("message")
+        self.assertEqual(json_transacrion_item, "success add category")
+
+        transaction = Transaction.objects.get(amount=123.321)
+        self.assertEqual(
+            str(transaction.category.category_id),
+            str(self.category1_object.category_id)
+        )
+        self.assertNotEqual(
+            str(transaction.category.category_id),
+            str(self.category2_object.category_id)
+        )
+
+    def test_user_not_auth_cannot_post_one_item_of_transaction(self):
+        data = {
+            "dompet":self.dompet1_object.account_id,
+            "category":self.category1_object.category_id,
+            "amount":123.321
+        }
+        response_transaction = self.basic_client.post(API_TRANSACTION_ITEM, data)
+        self.assertEqual(401, response_transaction.status_code)
+
+    def test_user_auth_cannot_post_transaction_when_dompet_and_category_not_found(self):
+        token = UtilCategory.get_jwt_token(self.client, EMAIL_TEST, PASSWORD_TEST)
+        self.basic_client.defaults["HTTP_AUTHORIZATION"] = 'Bearer ' + token
+        data = {
+            "amount":123.321
+        }
+        response_transaction = self.basic_client.post(API_TRANSACTION_ITEM, data)
+        self.assertEqual(404, response_transaction.status_code)
+
