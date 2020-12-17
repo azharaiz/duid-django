@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -44,5 +45,31 @@ class TransactionView(APIView):
         )
         content = {
             'message' : "success add category"
+        }
+        return Response(content)
+
+class TransactionItemView(APIView):
+    permission_classes = [IsAuthenticated]
+    def delete(self, request, transaction_id):
+        transaction_item = get_object_or_404(
+            Transaction, transaction_id=transaction_id
+        )
+        transaction_item.delete()
+        content = {
+            'message' : "success delete transaction"
+        }
+        return Response(content)
+
+    def put(self, request, transaction_id):
+        transaction_item = get_object_or_404(
+            Transaction, transaction_id=transaction_id
+        )
+        transaction_data = TransactionSerializer(
+            instance=transaction_item ,data=request.data
+        )
+        transaction_data.is_valid(raise_exception=True)
+        transaction_data.save()
+        content = {
+            'message' : "success add transaction"
         }
         return Response(content)
