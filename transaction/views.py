@@ -26,3 +26,23 @@ class TransactionView(APIView):
         }
 
         return Response(content)
+
+    def post(self, request):
+        transaction_data = TransactionSerializer(data=request.data)
+        transaction_data.is_valid(raise_exception=True)
+        dompet = get_object_or_404(
+            Dompet, account_id=request.data.get("dompet")
+        )
+        category = get_object_or_404(
+            Category, category_id=request.data.get("category")
+        )
+        Transaction.objects.create(
+            dompet=dompet,
+            category=category,
+            user=request.user,
+            amount=request.data.get("amount")
+        )
+        content = {
+            'message' : "success add category"
+        }
+        return Response(content)
