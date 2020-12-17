@@ -1,6 +1,7 @@
 from django.test import TestCase
-
 # Create your tests here.
+from rest_framework.exceptions import ValidationError
+
 from authentication.models import User
 from target.models import Target
 
@@ -53,3 +54,25 @@ class TargetModelTest(TestCase):
         self.assertEqual(2, len(self.all_target))
         Target.objects.all().delete()
         self.assertEqual(0, len(Target.objects.all()))
+
+    def test_target_cant_be_less_than_0(self):
+        new_test_target = Target(due_date=self.mock_target_date_1, target_title=self.mock_target_title_1,
+                                 target_amount=-1, user=self.user1)
+
+        with self.assertRaises(ValidationError):
+            new_test_target.save()
+
+        self.assertEqual(2, Target.objects.all().count())
+
+        new_test_target.target_amount = 0
+
+        with self.assertRaises(ValidationError):
+            new_test_target.save()
+
+        self.assertEqual(2, Target.objects.all().count())
+
+        new_test_target.target_amount = 1
+
+        new_test_target.save()
+
+        self.assertEqual(3, Target.objects.all().count())
