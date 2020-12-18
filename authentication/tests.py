@@ -106,7 +106,7 @@ class UserProfileViewTest(TestCase):
         content = json.loads(response.content)
         self.assertEqual(self.user.email, content.get('email'))
 
-        response = self.client.put(PROFILE_URL, {'email': EMAIL_UPDATED}, format='json')
+        response = self.client.put(PROFILE_URL, {'email': EMAIL_UPDATED, 'password': PASSWORD_TEST}, format='json')
         content = json.loads(response.content)
         self.assertEqual(EMAIL_UPDATED, content.get('email'))
 
