@@ -36,7 +36,7 @@ class IntegrationTest(TestCase):
         content = json.loads(response.content)
         self.assertEqual(MOCK_EMAIL, content.get('email'))
 
-    def test_create_user_then_create_category_finally_get_all_category_data(self):
+    def test_user_then_auth_then_category(self):
         response = self.client.post(URL_USER,
                                     {'email': MOCK_EMAIL, 'password': MOCK_PASSWORD},
                                     format='json')
