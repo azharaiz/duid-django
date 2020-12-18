@@ -73,3 +73,44 @@ class IntegrationTest(TestCase):
         self.assertEqual(category_data['category_title'], content.get('category_list')[0]['category_title'])
         self.assertEqual(category_data['category_type'], content.get('category_list')[0]['category_type'])
         self.assertEqual(user_id, content.get('category_list')[0]['user'])
+        self.assertTrue(content.get('category_list')[0]['created_at'])
+        self.assertTrue(content.get('category_list')[0]['updated_at'])
+
+        category_id = content.get('category_list')[0]['category_id']
+
+        url_one_category = URL_CATEGORY + category_id + '/'
+
+        response_get_one_category = self.client.get(url_one_category)
+
+        content = json.loads(response_get_one_category.content)
+        self.assertEqual(category_id, content.get('category_id'))
+        self.assertEqual(category_data['category_title'], content.get('category_title'))
+        self.assertEqual(category_data['category_type'], content.get('category_type'))
+        self.assertEqual(user_id, content.get('user'))
+        self.assertTrue(content.get('created_at'))
+        self.assertTrue(content.get('updated_at'))
+
+        category_updated_data = {
+            "category_title": "Test Category Updated",
+            "category_type": "EXPENSE"
+        }
+
+        response_update_category = self.client.put(url_one_category, category_updated_data)
+
+        content = json.loads(response_update_category.content)
+        self.assertEqual(content.get('message'), 'success add category')
+
+        response_get_one_category = self.client.get(url_one_category)
+
+        content = json.loads(response_get_one_category.content)
+        self.assertEqual(category_id, content.get('category_id'))
+        self.assertEqual(category_updated_data['category_title'], content.get('category_title'))
+        self.assertEqual(category_updated_data['category_type'], content.get('category_type'))
+        self.assertEqual(user_id, content.get('user'))
+        self.assertTrue(content.get('created_at'))
+        self.assertTrue(content.get('updated_at'))
+
+        response_delete_category = self.client.delete(url_one_category)
+        content = json.loads(response_delete_category.content)
+
+        self.assertEqual(content.get('message'), 'success delete category')
