@@ -9,5 +9,6 @@ urlpatterns = [
     path('api/dompet/', include('dompet.urls'), name='dompet_base'),
     path('api/auth/', include(('authentication.urls', 'authentication'), namespace='duid_auth')),
     path('api/category/', include('category.urls', namespace='category')),
-    path('api/target/', include('target.urls'))
+    path('api/target/', include('target.urls')),
+    path('api/transaction/', include('transaction.urls', namespace='transaction'))
 ]

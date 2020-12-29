@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'dompet',
     'category',
     'authentication',
-    'target'
+    'target',
+    'transaction'
 ]
 
 MIDDLEWARE = [
