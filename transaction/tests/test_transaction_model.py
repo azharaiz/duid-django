@@ -11,16 +11,21 @@ EMAIL_TEST = "test@email.com"
 OTHER_EMAIL_TEST = "othertest@email.com"
 PASSWORD_TEST = "test12345"
 
+
 class TransactionModelTest(TestCase):
     def setUp(self):
         self.mocked_date = datetime(2020, 11, 20, 20, 8, 7, 127325,
                                     tzinfo=pytz.timezone("Asia/Jakarta"))
-        self.user = User.objects.create_superuser(email=EMAIL_TEST, password=PASSWORD_TEST)
+        self.user = User.objects.create_superuser(
+            email=EMAIL_TEST, password=PASSWORD_TEST)
         self.other_user = User.objects.create_superuser(
             email=OTHER_EMAIL_TEST, password=PASSWORD_TEST
-            )
+        )
 
-        with mock.patch('django.utils.timezone.now', mock.Mock(return_value=self.mocked_date)):
+        with mock.patch(
+            'django.utils.timezone.now',
+            mock.Mock(return_value=self.mocked_date)
+        ):
             Category.objects.create(
                 category_title='category1',
                 user=self.user,
@@ -39,13 +44,19 @@ class TransactionModelTest(TestCase):
                 account_title="dompet_other",
                 user=self.other_user
             )
-        self.category1_object = Category.objects.get(category_title='category1')
-        self.category_other_object = Category.objects.get(category_title='category_other')
+        self.category1_object = Category.objects.get(
+            category_title='category1')
+        self.category_other_object = Category.objects.get(
+            category_title='category_other')
 
         self.dompet1_object = Dompet.objects.get(account_title='dompet1')
-        self.dompet_other_object = Dompet.objects.get(account_title='dompet_other')
+        self.dompet_other_object = Dompet.objects.get(
+            account_title='dompet_other')
 
-        with mock.patch('django.utils.timezone.now', mock.Mock(return_value=self.mocked_date)):
+        with mock.patch(
+            'django.utils.timezone.now',
+            mock.Mock(return_value=self.mocked_date)
+        ):
             Transaction.objects.create(
                 dompet=self.dompet1_object,
                 category=self.category1_object,
@@ -71,7 +82,8 @@ class TransactionModelTest(TestCase):
 
     def test_every_transaction_object_has_different_id(self):
         self.assertNotEqual(
-            self.transaction1.transaction_id, self.transaction_other.transaction_id
+            self.transaction1.transaction_id,
+            self.transaction_other.transaction_id
         )
 
     def test_transaction1_user_is_user(self):

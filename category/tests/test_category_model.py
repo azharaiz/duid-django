@@ -9,15 +9,20 @@ EMAIL_TEST = "test@email.com"
 OTHER_EMAIL_TEST = "othertest@email.com"
 PASSWORD_TEST = "test12345"
 
+
 class CategoryModelTest(TestCase):
     def setUp(self):
         self.mocked_date = datetime(2020, 11, 20, 20, 8, 7, 127325,
                                     tzinfo=pytz.timezone("Asia/Jakarta"))
-        self.user = User.objects.create_superuser(email=EMAIL_TEST, password=PASSWORD_TEST)
+        self.user = User.objects.create_superuser(
+            email=EMAIL_TEST, password=PASSWORD_TEST)
         self.other_user = User.objects.create_superuser(
             email=OTHER_EMAIL_TEST, password=PASSWORD_TEST
-            )
-        with mock.patch('django.utils.timezone.now', mock.Mock(return_value=self.mocked_date)):
+        )
+        with mock.patch(
+            'django.utils.timezone.now',
+            mock.Mock(return_value=self.mocked_date)
+        ):
             Category.objects.create(
                 category_title='title1',
                 user=self.user,
@@ -47,7 +52,8 @@ class CategoryModelTest(TestCase):
 
     def test_every_category_object_has_different_id(self):
         self.assertNotEqual(
-            self.category1_object.category_id, self.category2_object.category_id
+            self.category1_object.category_id,
+            self.category2_object.category_id
         )
 
     def test_category1_category_title_is_title1(self):
@@ -55,7 +61,8 @@ class CategoryModelTest(TestCase):
 
     def test_every_category_object_has_different_title(self):
         self.assertNotEqual(
-            self.category1_object.category_title, self.category2_object.category_title
+            self.category1_object.category_title,
+            self.category2_object.category_title
         )
 
     def test_category1_category_type_is_income(self):
@@ -63,7 +70,8 @@ class CategoryModelTest(TestCase):
 
     def test_every_category_object_has_different_type(self):
         self.assertNotEqual(
-            self.category1_object.category_type, self.category2_object.category_type
+            self.category1_object.category_type,
+            self.category2_object.category_type
         )
 
     def test_create_at_is_generated(self):
