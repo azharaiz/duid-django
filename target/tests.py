@@ -7,7 +7,7 @@ from rest_framework.test import APIClient
 
 from authentication.models import User
 from target.models import Target
-from target.util import UtilTarget
+from category.util import UtilCategory as UtilTarget
 
 EMAIL_TEST_1 = "test1@email.com"
 EMAIL_TEST_2 = "test2@email.com"
