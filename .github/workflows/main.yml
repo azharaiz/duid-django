@@ -27,7 +27,7 @@ jobs:
           docker-compose run --service-ports web coverage run manage.py test
           docker-compose run --service-ports web coverage xml -i
           docker-compose run --service-ports web coverage report
-          docker-compose run --service-ports web pylint --load-plugins=pylint_django --rcfile=.pylintrc target category transaction -r n --exit-zero
+          docker-compose run --service-ports web pylint --load-plugins=pylint_django --rcfile=.pylintrc target category transaction dompet -r n --exit-zero
           docker-compose run --service-ports web curl -s https://codecov.io/bash | bash
       - name: Coverage Artifact
         uses: actions/upload-artifact@v2

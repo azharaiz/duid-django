@@ -5,13 +5,13 @@ from .models import Dompet
 from .serializers import DompetSerializer
 
 
-class IsOwner(permissions.BasePermission):
+class IsOwnerPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return obj.user == request.user
 
 
-class DompetView(viewsets.ModelViewSet):
-    permission_classes = (IsOwner,)
+class DompetView(viewsets.ModelViewSet):  # pylint: disable=too-many-ancestors
+    permission_classes = (IsOwnerPermission,)
     serializer_class = DompetSerializer
 
     # Ensure a user sees only own Dompet objects.
@@ -25,5 +25,5 @@ class DompetView(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         try:
             serializer.save(user=self.request.user)
-        except ValueError:
-            raise PermissionDenied()
+        except ValueError as error:
+            raise PermissionDenied() from error
