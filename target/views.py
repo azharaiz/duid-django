@@ -10,7 +10,7 @@ class IsOwner(permissions.BasePermission):
         return obj.user == request.user
 
 
-class TargetView(viewsets.ModelViewSet):
+class TargetView(viewsets.ModelViewSet):  # pylint: disable=too-many-ancestors
     permission_classes = (IsOwner,)
     serializer_class = TargetSerializer
 
