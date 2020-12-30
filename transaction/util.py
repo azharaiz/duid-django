@@ -1,5 +1,5 @@
-import json
 from .models import Transaction
+
 
 class UtilTransaction:
 
