@@ -9,4 +9,6 @@ class TargetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Target
-        fields = ('target_id', 'user', 'due_date', 'target_title', 'target_amount')
+        fields = (
+            'target_id', 'user', 'due_date', 'target_title', 'target_amount',
+            'annual_invest_rate', 'monthly_deposit_amount')

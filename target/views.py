@@ -10,7 +10,7 @@ class IsOwner(permissions.BasePermission):
         return obj.user == request.user
 
 
-class TargetView(viewsets.ModelViewSet):
+class TargetView(viewsets.ModelViewSet):  # pylint: disable=too-many-ancestors
     permission_classes = (IsOwner,)
     serializer_class = TargetSerializer
 
@@ -25,5 +25,5 @@ class TargetView(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         try:
             serializer.save(user=self.request.user)
-        except ValueError:
-            raise PermissionDenied()
+        except ValueError as value_error:
+            raise PermissionDenied() from value_error
