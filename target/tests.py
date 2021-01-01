@@ -38,6 +38,8 @@ class MonthlyDepositUtiltest(TestCase):
         self.assertEqual(monthly_deposit_calculator(1, 1, 1, 0), 0)
         self.assertEqual(int(monthly_deposit_calculator(1000, 0.06, 5, 20000)),
                          267)
+        self.assertEqual(int(monthly_deposit_calculator(1000, 0.0, 5, 20000)),
+                         333)
 
 
 class TargetModelTest(TestCase):
@@ -406,7 +408,7 @@ class TargetApiTest(TestCase):
         self.assertEqual(json_response['annual_invest_rate'],
                          self.newly_created_target['annual_invest_rate'])
 
-        self.assertNotEqual(json_response['monthly_deposit_amount'],
+        self.assertEqual(json_response['monthly_deposit_amount'],
                          self.newly_created_target['monthly_deposit_amount'])
 
         # Negative test
@@ -435,7 +437,7 @@ class TargetApiTest(TestCase):
                 f'{datetime.now().year + param[1]}' \
                 f'-{datetime.now().month}-{datetime.now().day}'
 
-            target_obj = self.api_client.post(ALL_TARGET, {
+            self.api_client.post(ALL_TARGET, {
                 "target_title": MOCK_TARGET_TITLE_3,
                 "target_amount": param[2],
                 "due_date": calculated_due_date,

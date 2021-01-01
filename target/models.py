@@ -1,9 +1,11 @@
 import uuid
+from datetime import datetime
 
 from django.db import models
 from rest_framework.exceptions import ValidationError
 
 from authentication.models import User
+from target.util import monthly_deposit_calculator
 
 
 class Target(models.Model):
@@ -17,7 +19,15 @@ class Target(models.Model):
     monthly_deposit_amount = models.PositiveBigIntegerField(default=0)
 
     def clean(self):
-        self.monthly_deposit_amount = 0
+        due_date_year = int(
+            str(self.due_date).split('-')[0]) - int(datetime.now().year)
+
+        self.monthly_deposit_amount = \
+            monthly_deposit_calculator(0,
+                                       self.annual_invest_rate,
+                                       due_date_year,
+                                       self.target_amount)
+
         rate_error_msg = 'annual_invest_rate cant be negative value'
         if self.annual_invest_rate < 0:
             raise ValidationError({'annual_invest_rate': rate_error_msg})
