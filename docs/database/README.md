@@ -44,3 +44,13 @@ Unique key : (user_id, category_title)
 
 Primary key : transaction_id </br>
 Foreign key : category_id, user_id, account_id
+
+## Target :
+* target_id (primary key) : UUID
+* user_id (foreign key) : UUID
+* due_date : Date
+* target_title : String
+* target_amount : Integer
+
+Primary key : target_id </br>
+Foreign key : user_id 

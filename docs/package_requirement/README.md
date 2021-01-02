@@ -10,3 +10,5 @@ This package needed to run the application
 | PyJWT | 1.7.1|
 | pytz |2020.4|
 | sqlparse | 0.4.1 |
+| pylint | 2.6.0 |
+| pylint-django | 2.3.0 |
