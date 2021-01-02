@@ -1,4 +1,4 @@
-# Category API Documentation
+# Account(Dompet) API Documentation
 
 #### Header for all request: 
 
@@ -6,61 +6,74 @@
 {"Authorization" : BearerToken}
 ```
 
-## Get all auth user's category
-#### URL : `/api/category/`
+## Get all dompet
+#### URL : `/api/dompet/`
 
 #### Method : `GET`
 
 #### Response :
 ```json
 {
-    "category_list": [
+    "count": 5,
+    "next": null,
+    "previous": null,
+    "results": [
         {
-            "category_id": "b509c818-575f-46ad-a07c-524850c3674d",
-            "user": "2cbd2c4a-7601-4959-a249-a0d1ba87f448",
-            "category_title": "tester1111",
-            "category_type": "INCOME",
-            "created_at": "2020-12-04T04:42:43.237667Z",
-            "updated_at": "2020-12-04T04:42:43.237731Z"
+            "account_id": "00eec4dc-45d9-43ab-bee7-5f69dd1aba8b",
+            "account_title": "new",
+            "created_at": "2020-12-04T07:29:39.255688Z",
+            "updated_at": "2020-12-04T08:36:16.047932Z",
+            "user": "ae1a0426-17bb-4578-b34e-523695139654"
         },
         {
-            "category_id": "696b666b-cb12-4bb6-81c7-87710cba2a6c",
-            "user": "2cbd2c4a-7601-4959-a249-a0d1ba87f448",
-            "category_title": "tester343",
-            "category_type": "INCOME",
-            "created_at": "2020-12-04T06:39:29.363162Z",
-            "updated_at": "2020-12-04T06:40:05.043961Z"
+            "account_id": "9ecd1f36-20dd-4076-b6f0-82e87e931133",
+            "account_title": "duaaa",
+            "created_at": "2020-12-04T07:29:41.691663Z",
+            "updated_at": "2020-12-04T07:29:41.691708Z",
+            "user": "ae1a0426-17bb-4578-b34e-523695139654"
         },
         {
-            "category_id": "b61c07cc-e70c-4958-bfb0-1490ccdb95ec",
-            "user": "2cbd2c4a-7601-4959-a249-a0d1ba87f448",
-            "category_title": "tester343w",
-            "category_type": "INCOME",
-            "created_at": "2020-12-04T07:29:13.324519Z",
-            "updated_at": "2020-12-04T07:29:13.324546Z"
+            "account_id": "581d5993-f67d-413b-b734-b066c2a4b283",
+            "account_title": "aaaaa",
+            "created_at": "2020-12-04T08:25:23.764912Z",
+            "updated_at": "2020-12-04T08:25:23.764979Z",
+            "user": "ae1a0426-17bb-4578-b34e-523695139654"
+        },
+        {
+            "account_id": "0162242c-5163-41f6-b686-77e140e32284",
+            "account_title": "aaaaa",
+            "created_at": "2020-12-04T08:25:50.698512Z",
+            "updated_at": "2020-12-04T08:25:50.698564Z",
+            "user": "ae1a0426-17bb-4578-b34e-523695139654"
+        },
+        {
+            "account_id": "6cc15489-41ae-4a0f-b3cd-bc26753750ee",
+            "account_title": "BERUBAH",
+            "created_at": "2020-12-04T10:26:35.326316Z",
+            "updated_at": "2020-12-04T10:27:02.982422Z",
+            "user": "ae1a0426-17bb-4578-b34e-523695139654"
         }
     ]
 }
 ```
 
-## Get one auth user's category
-#### URL : `/api/category/<CategoryUUID>/`
+## Get one dompet
+#### URL : `/api/dompet/<DompetUUID>/`
 
 #### Method : `GET`
 
 #### Response :
 ```json
 {
-    "category_id": "b509c818-575f-46ad-a07c-524850c3674d",
-    "user": "2cbd2c4a-7601-4959-a249-a0d1ba87f448",
-    "category_title": "tester1111",
-    "category_type": "INCOME",
-    "created_at": "2020-12-04T04:42:43.237667Z",
-    "updated_at": "2020-12-04T04:42:43.237731Z"
+    "account_id": "00eec4dc-45d9-43ab-bee7-5f69dd1aba8b",
+    "account_title": "new",
+    "created_at": "2020-12-04T07:29:39.255688Z",
+    "updated_at": "2020-12-04T08:36:16.047932Z",
+    "user": "ae1a0426-17bb-4578-b34e-523695139654"
 }
 ```
 
-## Create one auth user's category
+## Create one dompet
 #### URL : `/api/dompet/`
 
 #### Method : `POST`
@@ -69,8 +82,8 @@
 
 ```json
 {
-    "category_title": String,
-    "category_type": String ("INCOME" or "EXPENSE")
+    "account_title": String,
+    "user": String(UserUUID)
 }
 
 
@@ -80,25 +93,27 @@
 
 ```json
 {
-    "message": "success add category"
+    "account_id": "00eec4dc-45d9-43ab-bee7-5f69dd1aba8b",
+    "account_title": "JUST MADE",
+    "created_at": "2020-12-04T07:29:39.255688Z",
+    "updated_at": "2020-12-04T08:36:16.047932Z",
+    "user": "ae1a0426-17bb-4578-b34e-523695139654"
 }
 ```
 
-## Delete one auth user's category
-#### URL : `/api/category/<CategoryUUID>/`
+## Delete one dompet
+#### URL : `/api/dompet/<DompetUUID>`
 
 #### Method : `DELETE`
 
 #### Response :
 
 ```json
-{
-    "message": "success delete category"
-}
+No response
 ```
 
-## Update one auth user's category
-#### URL : `/api/category/<CategoryUUID>/`
+## Update one dompet
+#### URL : `/api/dompet/<DompetUUID>`
 
 #### Method : `PUT`
 
@@ -106,8 +121,11 @@
 
 ```json
 {
-    "category_title": String,
-    "category_type": String ("INCOME" or "EXPENSE")
+    "account_id": "00eec4dc-45d9-43ab-bee7-5f69dd1aba8b",
+    "account_title": "BERUBAH",
+    "created_at": "2020-12-04T07:29:39.255688Z",
+    "updated_at": "2020-12-04T15:15:16.579703Z",
+    "user": "ae1a0426-17bb-4578-b34e-523695139654"
 }
 ```
 
@@ -115,6 +133,10 @@
 
 ```json
 {
-    "message": "success add category"
+    "account_id": "00eec4dc-45d9-43ab-bee7-5f69dd1aba8b",
+    "account_title": "BERUBAH",
+    "created_at": "2020-12-04T07:29:39.255688Z",
+    "updated_at": "2020-12-04T15:15:16.579703Z",
+    "user": "ae1a0426-17bb-4578-b34e-523695139654"
 }
 ```
