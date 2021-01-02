@@ -2,6 +2,16 @@
 version: "3.7"
 
 services:
+  postgres:
+    image: postgres:12-alpine
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
   web:
     build: .
     command: python3 manage.py runserver 0.0.0.0:8000
@@ -9,3 +19,5 @@ services:
       - .:/app
     ports:
       - "8000:8000"
+    depends_on:
+      - postgres
