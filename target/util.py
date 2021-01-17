@@ -13,7 +13,7 @@ def monthly_deposit_calculator(principal, annualrate,
     compoundinterestplusprincipal = principal * (
             preliminarynumber ** raisedtopower)
     if annualrate <= 0:
-        return target / (years * 12)
+        return compoundinterestplusprincipal
     oneplus = (1 + (annualrate / numberoftimescompounded))
     raisedtopower2 = (numberoftimescompounded * years)
     ratedividedbynumberoftimes = annualrate / numberoftimescompounded
