@@ -1,4 +1,117 @@
-# Account(Dompet) API Documentation
+# API Documentation
+## Authentication API
+
+### Get Token
+#### URL : `/api/auth/token`
+
+#### Method : `POST`
+
+#### Body :
+```json
+{
+    "email": "email@mail.com",
+    "password": "password"
+}
+```
+
+#### Response :
+##### 200
+```json
+{
+    "access": "ACCESS_TOKEN",
+    "refresh": "REFRESH_TOKEN"
+}
+```
+
+##### 404
+```json
+{
+    "detail": "No active account found with the given credentials"
+}
+```
+
+### Update Access Token
+#### URL : `/api/auth/token/refresh`
+
+#### Method : `POST`
+
+#### Body :
+```json
+{
+    "refresh": "REFRESH_TOKEN"
+}
+```
+
+#### Response :
+##### 200
+```json
+{
+    "access": "ACCESS_TOKEN"
+}
+```
+
+### Get User Profile
+#### URL : `/api/auth/profile`
+
+#### Method : `GET`
+
+#### Header:
+```json
+{
+    "Authorization" : "BEARER_TOKEN"
+}
+```
+
+#### Response :
+##### 200
+```json
+{
+    "id": "USER_ID",
+    "email": "USER_EMAIL",
+    "created_at": "DATE_CREATED",
+    "updated_at": "DATE_UPDATED"
+}
+```
+
+### Update User Profile
+#### URL : `/api/auth/profile`
+
+#### Method : `PUT`
+
+#### Header:
+```json
+{
+    "Authorization" : "BEARER_TOKEN"
+}
+```
+
+#### Body :
+```json
+{
+    "email?": "USER_EMAIL",
+    "password?": "USER_PASSWORD"
+}
+```
+
+#### Response :
+##### 200
+```json
+{
+    "id": "USER_ID",
+    "email": "USER_EMAIL",
+    "created_at": "DATE_CREATED",
+    "updated_at": "DATE_UPDATED"
+}
+```
+
+##### 400
+```json
+{
+    "message": "Invalid data"
+}
+```
+
+## Account(Dompet) API
 
 #### Header for all request: 
 
@@ -6,7 +119,7 @@
 {"Authorization" : BearerToken}
 ```
 
-## Get all dompet
+### Get all dompet
 #### URL : `/api/dompet/`
 
 #### Method : `GET`
@@ -57,7 +170,7 @@
 }
 ```
 
-## Get one dompet
+### Get one dompet
 #### URL : `/api/dompet/<DompetUUID>/`
 
 #### Method : `GET`
@@ -73,7 +186,7 @@
 }
 ```
 
-## Create one dompet
+### Create one dompet
 #### URL : `/api/dompet/`
 
 #### Method : `POST`
@@ -101,7 +214,7 @@
 }
 ```
 
-## Delete one dompet
+### Delete one dompet
 #### URL : `/api/dompet/<DompetUUID>`
 
 #### Method : `DELETE`
@@ -112,7 +225,7 @@
 No response
 ```
 
-## Update one dompet
+### Update one dompet
 #### URL : `/api/dompet/<DompetUUID>`
 
 #### Method : `PUT`
@@ -141,7 +254,110 @@ No response
 }
 ```
 
-# Target API Documentation
+## Transaction API
+### Get all auth user's transaction
+#### URL : `/api/transaction/`
+
+#### Method : `GET`
+
+#### Query parameter : 
+```json
+?account_id=uuid
+?category_id=uuid
+```
+
+#### Response :
+```json
+{
+    "transaction_list": [
+        {
+            "transaction_id": "31bb657b-b777-40d8-bb03-2e9fe71c4a54",
+            "user": "cc1eacfd-a6f4-4587-8ab0-b5349337dc92",
+            "dompet": "7f9f3b50-b707-4c5e-99bf-289adb748470",
+            "category": "dac6c3f9-99d5-4a6b-b82a-b18df76e5a48",
+            "amount": 100.0,
+            "created_at": "2020-12-16T08:50:19.919065Z",
+            "updated_at": "2020-12-16T08:50:19.919091Z"
+        },
+        {
+            "transaction_id": "7b79ad02-2fd1-4628-9031-94d670a841b5",
+            "user": "cc1eacfd-a6f4-4587-8ab0-b5349337dc92",
+            "dompet": "7f9f3b50-b707-4c5e-99bf-289adb748470",
+            "category": "dac6c3f9-99d5-4a6b-b82a-b18df76e5a48",
+            "amount": 1003333.0,
+            "created_at": "2020-12-16T08:50:45.578977Z",
+            "updated_at": "2020-12-16T08:50:45.578999Z"
+        }
+    ]
+}
+```
+
+### Create one auth user's transaction
+#### URL : `/api/transaction/`
+
+#### Method : `POST`
+
+#### Data :
+
+```json
+{
+    "user": uuid,
+    "dompet": uuid,
+    "category": uuid,
+    "amount": float,
+    "created_at": date,
+    "updated_at": date
+}
+```
+
+#### Response :
+
+```json
+{
+    "message": "success add transaction"
+}
+```
+
+### Delete one auth user's transaction
+#### URL : `/api/transaction/<TransactionUUID>/`
+
+#### Method : `DELETE`
+
+#### Response :
+
+```json
+{
+    "message": "success delete transaction"
+}
+```
+
+### Update one auth user's transaction
+#### URL : `/api/transaction/<TransactionUUID>/`
+
+#### Method : `PUT`
+
+#### Data :
+
+```json
+{
+    "user": uuid,
+    "dompet": uuid,
+    "category": uuid,
+    "amount": float,
+    "created_at": date,
+    "updated_at": date
+}
+```
+
+#### Response :
+
+```json
+{
+    "message": "success update category"
+}
+```
+
+## Target API
 
 #### Header for all request: 
 
@@ -159,7 +375,7 @@ for now, this app can only calculate target more than one year
 
 this app will give monthly_deposit_amount of 0 if annual_invest_rate is 0
 
-## Get all target
+### Get all target
 #### URL : `/api/target/`
 
 #### Method : `GET`
@@ -256,7 +472,7 @@ this app will give monthly_deposit_amount of 0 if annual_invest_rate is 0
 }
 ```
 
-## Get one target
+### Get one target
 #### URL : `/api/target/<targetUUID>/`
 
 #### Method : `GET`
@@ -274,7 +490,7 @@ this app will give monthly_deposit_amount of 0 if annual_invest_rate is 0
 }
 ```
 
-## Create one target
+### Create one target
 #### URL : `/api/target/`
 
 #### Method : `POST`
@@ -288,8 +504,6 @@ this app will give monthly_deposit_amount of 0 if annual_invest_rate is 0
     "due_date":"2025-04-21",
     "user":"f90b4e9c-bf8d-4f5d-a467-4ea62d658069"
 }
-
-
 ```
 
 #### Response :
@@ -306,7 +520,7 @@ this app will give monthly_deposit_amount of 0 if annual_invest_rate is 0
 }
 ```
 
-## Delete one target
+### Delete one target
 #### URL : `/api/target/<targetUUID>`
 
 #### Method : `DELETE`
@@ -317,7 +531,7 @@ this app will give monthly_deposit_amount of 0 if annual_invest_rate is 0
 No response
 ```
 
-## Update one target
+### Update one target
 #### URL : `/api/target/<targetUUID>`
 
 #### Method : `PUT`

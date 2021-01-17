@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'dompet',
     'category',
     'authentication',
+    'user'
     'target',
     'transaction'
 ]
