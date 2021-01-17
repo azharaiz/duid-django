@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 
 from django.test import TestCase, Client
 # Create your tests here.
@@ -6,8 +7,9 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.test import APIClient
 
 from authentication.models import User
-from target.models import Target
 from category.util import UtilCategory as UtilTarget
+from target.models import Target
+from target.util import monthly_deposit_calculator
 
 EMAIL_TEST_1 = "test1@email.com"
 EMAIL_TEST_2 = "test2@email.com"
@@ -17,12 +19,27 @@ MOCK_TARGET_TITLE_2 = "mock_target_title_2"
 MOCK_TARGET_TITLE_3 = "mock_target_title_3"
 MOCK_TARGET_AMOUNT_1 = 1000
 MOCK_TARGET_AMOUNT_2 = 20000
-MOCK_TARGET_DATE_1 = '2020-12-30'
-MOCK_TARGET_DATE_2 = '2020-12-28'
+MOCK_TARGET_DATE_1 = '2021-12-30'
+MOCK_TARGET_DATE_2 = '2022-12-28'
+MOCK_RATE_1 = 0.06
+MOCK_RATE_2 = 0.08
+MOCK_MONTHLY_DEPOSIT = 2000
 ALL_TARGET = '/api/target/'
 UNAUTHENTICATED_MESSAGE = "You do not have permission to perform this action."
 NOT_FOUND_MESSAGE = "Not found."
 UNAUTH_TITLE = 'unauth'
+
+
+class MonthlyDepositUtiltest(TestCase):
+    def test_monthly_deposit_util_result(self):
+        self.assertEqual(monthly_deposit_calculator(0, 0, 0, 0), 0)
+        self.assertEqual(monthly_deposit_calculator(-1, -1, -1, -1), 0)
+        self.assertEqual(monthly_deposit_calculator(1, 1, 1, 1), 0)
+        self.assertEqual(monthly_deposit_calculator(1, 1, 1, 0), 0)
+        self.assertEqual(int(monthly_deposit_calculator(1000, 0.06, 5, 20000)),
+                         267)
+        self.assertEqual(int(monthly_deposit_calculator(1000, 0.0, 5, 20000)),
+                         333)
 
 
 class TargetModelTest(TestCase):
@@ -32,10 +49,13 @@ class TargetModelTest(TestCase):
 
         Target(target_title=MOCK_TARGET_TITLE_1,
                target_amount=MOCK_TARGET_AMOUNT_1,
-               user=self.user1, due_date=MOCK_TARGET_DATE_1).save()
+               user=self.user1, due_date=MOCK_TARGET_DATE_1,
+               annual_invest_rate=MOCK_RATE_1).save()
         Target(target_title=MOCK_TARGET_TITLE_2,
                target_amount=MOCK_TARGET_AMOUNT_2,
-               user=self.user1, due_date=MOCK_TARGET_DATE_2).save()
+               user=self.user1, due_date=MOCK_TARGET_DATE_2,
+               annual_invest_rate=MOCK_RATE_2,
+               monthly_deposit_amount=MOCK_MONTHLY_DEPOSIT).save()
         self.all_target = Target.objects.all()
 
     def test_target_can_be_created(self):
@@ -51,6 +71,10 @@ class TargetModelTest(TestCase):
         self.assertEqual(self.all_target[1].user, self.user1)
         self.assertEqual(str(self.all_target[0].due_date), MOCK_TARGET_DATE_1)
         self.assertEqual(str(self.all_target[1].due_date), MOCK_TARGET_DATE_2)
+        self.assertEqual(self.all_target[0].annual_invest_rate,
+                         MOCK_RATE_1)
+        self.assertEqual(self.all_target[1].annual_invest_rate,
+                         MOCK_RATE_2)
 
     def test_target_can_be_updated(self):
         self.assertEqual(2, len(self.all_target))
@@ -99,6 +123,60 @@ class TargetModelTest(TestCase):
 
         self.assertEqual(3, Target.objects.all().count())
 
+    def test_annual_invest_rate_cant_be_less_than_0(self):
+        new_test_target = Target(due_date=MOCK_TARGET_DATE_1,
+                                 target_title=MOCK_TARGET_TITLE_1,
+                                 target_amount=200, user=self.user1,
+                                 annual_invest_rate=-0.01)
+
+        with self.assertRaises(ValidationError):
+            new_test_target.save()
+
+        self.assertEqual(2, Target.objects.all().count())
+
+        new_test_target.annual_invest_rate = 0.01
+
+        new_test_target.save()
+
+        self.assertEqual(3, Target.objects.all().count())
+
+    def test_monthly_deposit_cant_be_set_manually(self):
+        Target(due_date=MOCK_TARGET_DATE_1,
+               target_title=MOCK_TARGET_TITLE_1,
+               target_amount=200, user=self.user1,
+               annual_invest_rate=0.01,
+               monthly_deposit_amount=2000).save()
+
+        self.assertEqual(
+            len(Target.objects.filter(monthly_deposit_amount=2000)), 0)
+
+        self.assertEqual(
+            len(Target.objects.all()), 3)
+
+    def test_model_monthly_deposit(self):
+        # Value only contains outside of constraint
+        param_list = [
+            {'param': [0, 0, 1], 'result': 0},
+            {'param': [1, -1, 1], 'result': 0},
+            {'param': [1, 1, 1], 'result': 0},
+            {'param': [0.06, 5, 20000], 'result': 286},
+
+        ]
+        for data in param_list:
+            Target.objects.all().delete()
+
+            param = data['param']
+            calculated_due_date = \
+                f'{datetime.now().year + param[1]}' \
+                f'-{datetime.now().month}-{datetime.now().day}'
+            Target(target_title=MOCK_TARGET_TITLE_1,
+                   target_amount=param[2],
+                   user=self.user1,
+                   due_date=calculated_due_date,
+                   annual_invest_rate=param[0]).save()
+            self.assertEqual(Target.objects.all()[0].monthly_deposit_amount,
+                             data['result'])
+
 
 class TargetApiTest(TestCase):
     def setUp(self):
@@ -115,19 +193,17 @@ class TargetApiTest(TestCase):
             "target_title": MOCK_TARGET_TITLE_3,
             "target_amount": MOCK_TARGET_AMOUNT_1,
             "due_date": MOCK_TARGET_DATE_1,
-            "user": str(self.user1.id)
+            "user": str(self.user1.id),
+            "annual_invest_rate": MOCK_RATE_1,
+            "monthly_deposit_amount": MOCK_MONTHLY_DEPOSIT,
         })
         self.newly_created_target = json.loads(
             self.new_target_post.content.decode('utf-8'))
-        # {"target_title": "test 1", "user": str(self.user2.id),
-        #  "target_amount": 200, "due_date": MOCK_TARGET_DATE_1}
 
     def test_unauthenticated_should_not_be_able_to_access_any_data(self):
         response = self.unauthenticated_client.get(ALL_TARGET)
         json_response = json.loads(response.content.decode('utf-8'))
-        # print(json_response)
         self.assertEqual(json_response['detail'], UNAUTHENTICATED_MESSAGE)
-        #
         response = self.unauthenticated_client.get(
             f'{ALL_TARGET}{self.newly_created_target["target_id"]}/')
         json_response = json.loads(response.content.decode('utf-8'))
@@ -137,7 +213,9 @@ class TargetApiTest(TestCase):
             "target_title": MOCK_TARGET_TITLE_3,
             "target_amount": MOCK_TARGET_AMOUNT_1,
             "due_date": MOCK_TARGET_DATE_1,
-            "user": str(self.user1.id)
+            "user": str(self.user1.id),
+            "annual_invest_rate": MOCK_RATE_1,
+            "monthly_deposit_amount": MOCK_TARGET_AMOUNT_1
         })
         json_response = json.loads(response.content.decode('utf-8'))
         self.assertEqual(json_response['detail'], UNAUTHENTICATED_MESSAGE)
@@ -165,7 +243,8 @@ class TargetApiTest(TestCase):
             "user": str(
                 self.user2.id),
             "target_amount": 200,
-            "due_date": MOCK_TARGET_DATE_1}
+            "due_date": MOCK_TARGET_DATE_1, "annual_invest_rate": MOCK_RATE_1,
+            "monthly_deposit_amount": MOCK_TARGET_AMOUNT_1, }
         user_2_new_target_response = api_client_user_2.post(ALL_TARGET,
                                                             post_data)
         user_2_new_target_json = json.loads(
@@ -180,7 +259,7 @@ class TargetApiTest(TestCase):
         response = self.api_client.get(f'{ALL_TARGET}')
         json_response = json.loads(response.content.decode('utf-8'))
         self.assertEqual(json_response['count'], 1)
-        #
+
         response = self.api_client.put(
             f'{ALL_TARGET}{user_2_new_target_json["target_id"]}/',
             data={"target_title": "changed", "user": str(self.user2.id)})
@@ -284,6 +363,11 @@ class TargetApiTest(TestCase):
         self.assertEqual(json_response['target_title'][0],
                          "This field may not be blank.")
 
+        # monthly deposit cant be set manually
+        self.assertNotEqual(Target.objects.all()[
+                                0].monthly_deposit_amount,
+                            MOCK_MONTHLY_DEPOSIT)
+
     def test_delete_target(self):
         self.assertEqual(Target.objects.all()[0].target_title,
                          self.newly_created_target['target_title'])
@@ -309,7 +393,9 @@ class TargetApiTest(TestCase):
         response = self.api_client.put(
             f'{ALL_TARGET}{self.newly_created_target["target_id"]}/',
             data={"target_title": change_title, "user": str(self.user2.id),
-                  "target_amount": 200, "due_date": MOCK_TARGET_DATE_1})
+                  "target_amount": 200, "due_date": MOCK_TARGET_DATE_1,
+                  "annual_invest_rate": MOCK_RATE_1,
+                  "monthly_deposit_amount": MOCK_TARGET_AMOUNT_1, })
         json_response = json.loads(response.content.decode('utf-8'))
         self.assertNotEqual(json_response['target_title'],
                             self.newly_created_target['target_title'])
@@ -319,6 +405,12 @@ class TargetApiTest(TestCase):
         self.assertEqual(json_response['target_id'],
                          self.newly_created_target['target_id'])
 
+        self.assertEqual(json_response['annual_invest_rate'],
+                         self.newly_created_target['annual_invest_rate'])
+
+        self.assertEqual(json_response['monthly_deposit_amount'],
+                         self.newly_created_target['monthly_deposit_amount'])
+
         # Negative test
         response = self.api_client.put(f'{ALL_TARGET}wrong/',
                                        {"target_title": change_title,
@@ -326,3 +418,33 @@ class TargetApiTest(TestCase):
                                        content_type='application/json')
         json_response = json.loads(response.content.decode('utf-8'))
         self.assertEqual(json_response['detail'], NOT_FOUND_MESSAGE)
+
+    def test_api_monthly_deposit(self):
+
+        # Value only contains outside of constraint
+        param_list = [
+            {'param': [0, 0, 1], 'result': 0},
+            {'param': [1, -1, 1], 'result': 0},
+            {'param': [1, 1, 1], 'result': 0},
+            {'param': [0.06, 5, 20000], 'result': 286},
+
+        ]
+        for data in param_list:
+            Target.objects.all().delete()
+
+            param = data['param']
+            calculated_due_date = \
+                f'{datetime.now().year + param[1]}' \
+                f'-{datetime.now().month}-{datetime.now().day}'
+
+            self.api_client.post(ALL_TARGET, {
+                "target_title": MOCK_TARGET_TITLE_3,
+                "target_amount": param[2],
+                "due_date": calculated_due_date,
+                "user": str(self.user1.id),
+                "annual_invest_rate": param[0],
+                "monthly_deposit_amount": MOCK_MONTHLY_DEPOSIT,
+            })
+
+            self.assertEqual(Target.objects.all()[0].monthly_deposit_amount,
+                             data['result'])
