@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'category',
     'authentication',
     'user'
+    'target',
+    'transaction'
 ]
 
 MIDDLEWARE = [

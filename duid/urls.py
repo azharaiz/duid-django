@@ -10,4 +10,6 @@ urlpatterns = [
     path('api/auth/', include(('authentication.urls', 'authentication'), namespace='duid_auth')),
     path('api/category/', include('category.urls', namespace='category')),
     path('api/user/', include(('user.urls', 'user'), namespace='duid_user'))
+    path('api/target/', include('target.urls')),
+    path('api/transaction/', include('transaction.urls', namespace='transaction'))
 ]
