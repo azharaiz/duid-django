@@ -1,6 +1,8 @@
 # DUID
 [![codecov](https://codecov.io/gh/azharaiz/duid/branch/master/graph/badge.svg)](https://codecov.io/gh/azharaiz/duid)
 
+## Move to https://github.com/azharaiz/duid
+
 Open source expense tracker.
 
 ## Technologies
